@@ -1,0 +1,14 @@
+# Cloudflare Worker configuration
+name = "cfmail"
+main = "src/index.ts"
+compatibility_date = "2026-04-06"
+
+# Bind a KV namespace for users + messages.
+# Replace the id with your actual KV namespace id.
+[[kv_namespaces]]
+binding = "MAIL_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+# Secrets:
+# - ADMIN_TOKEN
+# - RESEND_API_KEY (optional, required for /outgoing-emails)
