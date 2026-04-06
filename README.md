@@ -3,6 +3,11 @@
 面向域名邮箱的 Cloudflare Worker 邮件服务：  
 **收件进 KV，API 取件；发件走 Resend（可选但内置）。**
 
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/mazixuan69/cfmail)
+[![Built with Cloudflare](https://workers.cloudflare.com/built-with-cloudflare.svg)](https://cloudflare.com)
+[![License](https://img.shields.io/github/license/mazixuan69/cfmail)](LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/mazixuan69/cfmail)](https://github.com/mazixuan69/cfmail/commits)
+
 ## 为什么是它
 
 `cfmail` 不是“又一个邮件转发”，而是你的域名邮箱 API 后台：
@@ -30,9 +35,14 @@ Client API  -> Worker (fetch) -> Resend API (send)
 
 ## 快速开始
 
-**1. 创建 KV 命名空间**
-- 在 Cloudflare Dashboard 创建 KV
-- 记下 KV ID，写入 `wrangler.toml`
+**方式 A：一键部署（推荐）**
+1. 点击上面的 **Deploy to Cloudflare** 按钮  
+2. Cloudflare 会帮你创建仓库副本、配置资源并部署  
+3. 部署完成后在 Dashboard 里继续修改/发布
+
+**方式 B：手动部署**
+1. 创建 KV 命名空间  
+2. 记下 KV ID，写入 `wrangler.toml`
 
 **2. 配置 Secrets**
 - `ADMIN_TOKEN` 管理员 token
@@ -47,6 +57,27 @@ wrangler deploy
 
 - 管理员接口：`Authorization: Bearer <ADMIN_TOKEN>`
 - 用户接口：`Authorization: Bearer <USER_TOKEN>`
+
+## 配置示例
+
+**`wrangler.toml` 关键字段**
+```
+name = "cfmail"
+main = "src/index.ts"
+compatibility_date = "2026-04-06"
+
+[[kv_namespaces]]
+binding = "MAIL_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+```
+
+**环境变量 / Secret**
+
+| 名称 | 必需 | 作用 |
+| --- | --- | --- |
+| `MAIL_KV` | 是 | KV 命名空间绑定 |
+| `ADMIN_TOKEN` | 是 | 管理员鉴权 token |
+| `RESEND_API_KEY` | 否 | 启用发件（Resend） |
 
 ## 主要 API
 
@@ -128,3 +159,14 @@ curl -X POST https://<your-worker>/outgoing-emails \
 ## License
 
 MIT
+
+## FAQ
+
+**Q: 为什么列表里偶尔看不到刚收的邮件？**  
+A: KV 是最终一致，列表可能延迟几十秒，稍后再试即可。
+
+**Q: 收件人不在用户表里会怎样？**  
+A: 会进入 `unassigned` 信箱，管理员可查看。
+
+**Q: 发件必须走 Resend 吗？**  
+A: 目前是可选项。Worker 内置 Resend 支持，但未配置 `RESEND_API_KEY` 时会返回错误。
